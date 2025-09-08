@@ -1,9 +1,7 @@
 'use client';
-
 import { ClerkProvider } from '@clerk/nextjs';
-import { dark } from '@clerk/themes';
 import { useTheme } from '@/contexts/ThemeContext';
-
+import { dark } from '@clerk/themes'; // Import the dark theme
 interface ClerkThemeProviderProps {
   children: React.ReactNode;
 }
