@@ -8,25 +8,40 @@ export async function checkUser() {
         return null;
     }
 
-    const loggedInUser = await db.user.findFirst({
-        where: {
-            clerkUserId: user.id
-        }
-    }); 
+    try {
+        // Use upsert to handle both finding existing user and creating new one
+        const dbUser = await db.user.upsert({
+            where: {
+                clerkUserId: user.id
+            },
+            update: {
+                // Update existing user data if needed
+                name: `${user.firstName} ${user.lastName}`,
+                imageUrl: user.imageUrl,
+                email: user.emailAddresses[0]?.emailAddress,
+            },
+            create: {
+                clerkUserId: user.id,
+                name: `${user.firstName} ${user.lastName}`,
+                imageUrl: user.imageUrl,
+                email: user.emailAddresses[0]?.emailAddress,
+            }
+        });
 
-    if (loggedInUser) {
-        return loggedInUser;
+        return dbUser;
+    } catch (error) {
+        console.error('Error in checkUser:', error);
+        
+        // If there's still a unique constraint error, try to find the existing user
+        const existingUser = await db.user.findFirst({
+            where: {
+                OR: [
+                    { clerkUserId: user.id },
+                    { email: user.emailAddresses[0]?.emailAddress }
+                ]
+            }
+        });
+        
+        return existingUser;
     }
-
-    // Create new user if not found
-    const newUser = await db.user.create({
-        data: {
-            clerkUserId: user.id,
-            name: user.firstName || 'no name',
-            imageUrl: user.imageUrl,
-            email: user.emailAddresses[0]?.emailAddress || 'no email',
-        }
-    });
-
-    return newUser;
-}
+}  

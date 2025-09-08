@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import ClerkThemeProvider from "@/components/ClerkThemeProvider";
 import Footer from "@/components/Footer";
+import UserSync from "@/components/UserSync";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -14,6 +15,11 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+export const metadata: Metadata = {
+  title: "Expense Tracker",
+  description: "Track your expenses with AI-powered insights",
+};
 
 export default function RootLayout({
   children,
@@ -42,6 +48,7 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <ClerkThemeProvider>
+            <UserSync />
             <Navbar />
             {children}
             <Footer />
