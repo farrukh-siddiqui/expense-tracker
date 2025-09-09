@@ -4,6 +4,7 @@ import ExpenseStats from '@/components/ExpenseStats';
 import Guest from '@/components/Guest';
 import RecordChart from '@/components/RecordChart';
 import RecordHistory from '@/components/RecordHistory';
+import UploadStatement from '@/components/UploadStatement';
 import { currentUser } from '@clerk/nextjs/server';
 import { checkUser } from '@/lib/checkUser';
 
@@ -92,6 +93,8 @@ export default async function HomePage() {
 
           {/* Right Column - Stacked below on mobile */}
           <div className='space-y-4 sm:space-y-6'>
+            {/* Bank Statement Upload */}
+            <UploadStatement />
             {/* Expense Analytics */}
             <RecordChart />
             <ExpenseStats />
