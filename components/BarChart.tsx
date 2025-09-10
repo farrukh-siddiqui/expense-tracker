@@ -50,14 +50,21 @@ const BarChart = ({ records }: { records: Record[] }) => {
 
   const isMobile = windowWidth < 640;
 
-  // Aggregate expenses by date
+  // Aggregate expenses by date - ONLY include expenses (positive amounts as expenses)
   const aggregateByDate = (records: Record[]) => {
     const dateMap = new Map<
       string,
       { total: number; categories: string[]; originalDate: string }
     >();
 
-    records.forEach((record) => {
+    // Filter to only include expenses (debits) - typically positive amounts for expenses
+    const expenseRecords = records.filter((record) => {
+      // Include only expense-related categories and positive amounts
+      const expenseCategories = ['Food', 'Transportation', 'Shopping', 'Entertainment', 'Bills', 'Healthcare'];
+      return expenseCategories.includes(record.category) && record.amount > 0;
+    });
+
+    expenseRecords.forEach((record) => {
       // Parse the date string properly and extract just the date part (YYYY-MM-DD)
       const dateObj = new Date(record.date);
       // Use UTC methods to avoid timezone issues
@@ -68,13 +75,13 @@ const BarChart = ({ records }: { records: Record[] }) => {
       const existing = dateMap.get(dateKey);
 
       if (existing) {
-        existing.total += record.amount;
+        existing.total += record.amount; // Always positive for expenses
         if (!existing.categories.includes(record.category)) {
           existing.categories.push(record.category);
         }
       } else {
         dateMap.set(dateKey, {
-          total: record.amount,
+          total: record.amount, // Always positive for expenses
           categories: [record.category],
           originalDate: record.date, // Keep original ISO date for sorting
         });

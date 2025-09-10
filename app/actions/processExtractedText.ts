@@ -1,9 +1,11 @@
 'use server';
 import { auth } from '@clerk/nextjs/server';
+import { TransactionReviewData } from '@/types/transaction';
+import { parseBankStatementWithAI } from '@/lib/ai';
 
 interface ProcessExtractedTextResult {
   success?: boolean;
-  data?: {
+  data?: TransactionReviewData & {
     message: string;
     textLength: number;
     filename: string;
@@ -26,23 +28,20 @@ async function processExtractedText(formData: FormData): Promise<ProcessExtracte
   }
 
   try {
-    console.log('=== SERVER-SIDE TEXT PROCESSING START ===');
-    console.log('User ID:', userId);
-    console.log('Filename:', filename || 'Unknown');
-    console.log('Text length:', extractedText.length, 'characters');
-    console.log('=== EXTRACTED TEXT START ===');
-    console.log(extractedText);
-    console.log('=== EXTRACTED TEXT END ===');
+    // Use AI to parse the extracted text into structured transaction data
+    const parsedData = await parseBankStatementWithAI(extractedText);
 
-    // Here you would add your AI processing logic
-    // For now, just return success with the text data
+    const responseData = {
+      transactions: parsedData.transactions,
+      accountInfo: parsedData.accountInfo,
+      message: 'Text processed and transactions parsed successfully with AI',
+      textLength: extractedText.length,
+      filename: filename || 'Unknown'
+    };
+
     return {
       success: true,
-      data: {
-        message: 'Text processed successfully',
-        textLength: extractedText.length,
-        filename: filename || 'Unknown'
-      }
+      data: responseData
     };
 
   } catch (error) {

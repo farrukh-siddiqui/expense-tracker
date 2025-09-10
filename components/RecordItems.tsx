@@ -27,81 +27,76 @@ const RecordItem = ({ record }: { record: Record }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDeleteRecord = async (recordId: string) => {
-    setIsLoading(true); // Show loading spinner
-    await deleteRecord(recordId); // Perform delete operation
-    setIsLoading(false); // Hide loading spinner
+    setIsLoading(true);
+    await deleteRecord(recordId);
+    setIsLoading(false);
   };
 
-  // Determine border color based on expense amount
-  const getBorderColor = (amount: number) => {
-    if (amount > 100) return 'border-red-500'; // High expense
-    if (amount > 50) return 'border-yellow-500'; // Medium expense
-    return 'border-green-500'; // Low expense
+  // Get category color based on category
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'Food': return 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/20';
+      case 'Transportation': return 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/20';
+      case 'Shopping': return 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/20';
+      case 'Entertainment': return 'text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950/20';
+      case 'Bills': return 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20';
+      case 'Healthcare': return 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/20';
+      default: return 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-950/20';
+    }
   };
 
   return (
-    <li
-      className={`bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm p-4 sm:p-6 rounded-xl shadow-lg border border-gray-100/50 dark:border-gray-600/50 border-l-4 ${getBorderColor(
-        record?.amount
-      )} hover:bg-white/80 dark:hover:bg-gray-700/80 relative min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-visible group`}
-    >
-      {/* Delete button positioned absolutely in top-right corner */}
-      <button
-        onClick={() => handleDeleteRecord(record.id)}
-        className={`absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center shadow-lg hover:shadow-xl border-2 border-white dark:border-gray-700 backdrop-blur-sm transform hover:scale-110 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 ${
-          isLoading ? 'cursor-not-allowed scale-100' : ''
-        }`}
-        aria-label='Delete record'
-        disabled={isLoading} // Disable button while loading
-        title='Delete expense record'
-      >
-        {isLoading ? (
-          <div className='w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin'></div>
-        ) : (
-          <svg
-            className='w-3 h-3 sm:w-4 sm:h-4'
-            fill='none'
-            stroke='currentColor'
-            viewBox='0 0 24 24'
-            xmlns='http://www.w3.org/2000/svg'
-          >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M6 18L18 6M6 6l12 12'
-            />
-          </svg>
-        )}
-      </button>
-
-      {/* Content area with proper spacing */}
-      <div className='flex-1 flex flex-col justify-between'>
-        <div className='space-y-2 sm:space-y-3'>
-          <div className='flex items-center justify-between'>
-            <span className='text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide uppercase'>
-              {new Date(record?.date).toLocaleDateString()}
-            </span>
-            <span className='text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100'>
-              ${record?.amount.toFixed(2)}
-            </span>
-          </div>
-
-          <div className='flex items-center gap-2'>
-            <span className='text-base sm:text-lg'>
-              {getCategoryEmoji(record?.category)}
-            </span>
-            <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
-              {record?.category}
-            </span>
-          </div>
+    <div className='group flex items-center justify-between p-3 rounded-lg border border-border hover:bg-accent/50 transition-all duration-200'>
+      {/* Left side - Category and Description */}
+      <div className='flex items-center gap-3 flex-1'>
+        {/* Category Badge */}
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${getCategoryColor(record?.category)}`}>
+          <span className='text-sm'>{getCategoryEmoji(record?.category)}</span>
+          <span>{record?.category}</span>
         </div>
-
-        <div className='text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2'>
-          <p className='truncate break-words line-clamp-2'>{record?.text}</p>
+        
+        {/* Description and Date */}
+        <div className='flex-1 min-w-0'>
+          <p className='text-sm font-medium text-foreground truncate'>
+            {record?.category} Expense
+          </p>
+          <p className='text-xs text-muted-foreground'>
+            {new Date(record?.date).toLocaleDateString('en-US', { 
+              weekday: 'short', 
+              month: 'short', 
+              day: 'numeric',
+              year: 'numeric'
+            })}
+          </p>
         </div>
       </div>
-    </li>
+
+      {/* Right side - Amount and Delete */}
+      <div className='flex items-center gap-3'>
+        {/* Amount */}
+        <div className='text-right'>
+          <p className='text-sm font-semibold text-foreground'>
+            ${record?.amount.toFixed(2)}
+          </p>
+        </div>
+
+        {/* Delete Button */}
+        <button
+          onClick={() => handleDeleteRecord(record.id)}
+          className='opacity-0 group-hover:opacity-100 p-1.5 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all duration-200'
+          disabled={isLoading}
+          aria-label='Delete record'
+        >
+          {isLoading ? (
+            <div className='w-4 h-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin'></div>
+          ) : (
+            <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' />
+            </svg>
+          )}
+        </button>
+      </div>
+    </div>
   );
 };
 

@@ -1,6 +1,9 @@
 'use client';
 import { useState, useRef } from 'react';
 import processExtractedText from '@/app/actions/processExtractedText';
+import saveTransactions from '@/app/actions/saveTransactions';
+import TransactionReviewDialog from './TransactionReviewDialog';
+import { TransactionReviewData, ParsedTransaction } from '@/types/transaction';
 
 // Type declaration for PDF.js global
 declare global {
@@ -30,6 +33,8 @@ const UploadStatement = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [alertType, setAlertType] = useState<'success' | 'error' | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [transactionData, setTransactionData] = useState<TransactionReviewData | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (file: File) => {
@@ -107,13 +112,17 @@ const UploadStatement = () => {
           for (let i = 1; i <= numPages; i++) {
             const page = await pdf.getPage(i);
             const textContent = await page.getTextContent();
+            
             const pageText = textContent.items
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              .map((item: any) => item.str)
+              .map((item: any) => {
+                return item.str || '';
+              })
               .join(' ')
               .replace(/\s+/g, ' ')
               .trim();
-            extractedText += pageText + '\n\n';
+            
+            extractedText += pageText + '\n\n--- PAGE BREAK ---\n\n';
           }
 
           resolve(extractedText);
@@ -146,22 +155,34 @@ const UploadStatement = () => {
         throw new Error('No text could be extracted from the PDF');
       }
 
-      console.log('Client-side extraction successful:', extractedText.substring(0, 500) + '...');
-
       // Step 2: Send text to server for processing
-      setAlertMessage('Sending to server for AI analysis...');
+      setAlertMessage('Processing transactions...');
       const formData = new FormData();
       formData.append('text', extractedText);
-      formData.append('filename', uploadedFile.name); // Optional metadata
+      formData.append('filename', uploadedFile.name);
 
       const result = await processExtractedText(formData);
 
       if (result.error) {
         throw new Error(result.error);
-      } else if (result.success) {
-        setAlertMessage('Analysis completed! Check console or dashboard for insights.');
-        setAlertType('success');
-        console.log('Server processing successful:', result);
+      } else if (result.success && result.data) {
+        // Check if we have the required fields
+        if (result.data.transactions && result.data.accountInfo) {
+          // Extract transaction data from result
+          const reviewData: TransactionReviewData = {
+            transactions: result.data.transactions,
+            accountInfo: result.data.accountInfo
+          };
+          
+          setTransactionData(reviewData);
+          setIsModalOpen(true);
+          setAlertMessage('Transactions extracted! Please review and categorize them.');
+          setAlertType('success');
+        } else {
+          console.error('Missing required data fields in server response');
+          setAlertMessage('Error: Invalid response structure from server.');
+          setAlertType('error');
+        }
       }
     } catch (error: unknown) {
       console.error('Error in analysis:', error);
@@ -181,22 +202,52 @@ const UploadStatement = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setTransactionData(null);
+  };
+
+  const handleSaveTransactions = async (transactions: ParsedTransaction[]) => {
+    try {
+      const result = await saveTransactions(transactions);
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      if (result.success) {
+        setAlertMessage(`Successfully saved ${result.data?.savedCount} transactions to your records!`);
+        setAlertType('success');
+        
+        // Reset upload state
+        setUploadedFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error('Error saving transactions:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save transactions.';
+      setAlertMessage(errorMessage);
+      setAlertType('error');
+      throw error; // Re-throw so modal can handle it
+    }
+  };
+
   const handleBrowseClick = () => {
     fileInputRef.current?.click();
   };
 
   return (
-    <div className='bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl border border-gray-200/80 dark:border-gray-700/80 shadow-xl hover:shadow-2xl transition-all duration-300 p-4 sm:p-6'>
+    <div className='bg-card backdrop-blur-lg rounded-2xl border border-border shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-6'>
       {/* Header */}
       <div className='mb-6'>
         <div className='flex items-center gap-3 mb-2'>
           <div className='w-8 h-8 bg-gradient-to-r from-emerald-500 to-green-600 rounded-lg flex items-center justify-center'>
             <span className='text-white text-sm font-bold'>AI</span>
           </div>
-          <h2 className='text-lg font-semibold text-gray-900 dark:text-gray-100'>Bank Statement Analysis</h2>
+          <h2 className='text-lg font-semibold text-card-foreground'>Bank Statement Analysis</h2>
         </div>
         <div className='pl-11'>
-          <p className='text-xs text-gray-500 dark:text-gray-400'>AI-powered expense analysis and insights</p>
+          <p className='text-xs text-muted-foreground'>AI-powered expense analysis and insights</p>
         </div>
       </div>
 
@@ -240,21 +291,21 @@ const UploadStatement = () => {
               <span className='text-2xl'>📤</span>
             </div>
             <div className='space-y-2'>
-              <h3 className='text-base font-semibold text-gray-900 dark:text-gray-100'>Drop your bank statement PDF here</h3>
-              <p className='text-sm text-gray-500 dark:text-gray-400'>
+              <h3 className='text-base font-semibold text-foreground'>Drop your bank statement PDF here</h3>
+              <p className='text-sm text-muted-foreground'>
                 or{' '}
                 <button onClick={handleBrowseClick} className='text-emerald-600 dark:text-emerald-400 font-medium hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors'>
                   browse to upload
                 </button>
               </p>
             </div>
-            <div className='flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500'>
+            <div className='flex items-center gap-4 text-xs text-muted-foreground'>
               <div className='flex items-center gap-1'>
-                <span className='w-1 h-1 bg-gray-400 rounded-full'></span>
+                <span className='w-1 h-1 bg-muted-foreground rounded-full'></span>
                 PDF files only
               </div>
               <div className='flex items-center gap-1'>
-                <span className='w-1 h-1 bg-gray-400 rounded-full'></span>
+                <span className='w-1 h-1 bg-muted-foreground rounded-full'></span>
                 Max 10MB
               </div>
             </div>
@@ -266,7 +317,7 @@ const UploadStatement = () => {
                 <span className='text-red-600 dark:text-red-400 text-lg'>📄</span>
               </div>
               <div>
-                <p className='text-sm font-medium text-gray-900 dark:text-gray-100'>{uploadedFile.name}</p>
+                <p className='text-sm font-medium text-foreground'>{uploadedFile.name}</p>
                 <p className='text-xs text-gray-500 dark:text-gray-400'>{(uploadedFile.size / 1024).toFixed(2)} KB</p>
               </div>
             </div>
@@ -279,25 +330,27 @@ const UploadStatement = () => {
 
       {/* Action Button */}
       {uploadedFile && (
-        <button
-          onClick={handleAnalyze}
-          disabled={isUploading || isExtracting}
-          className='w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:scale-100 disabled:cursor-not-allowed'
-        >
-          {isExtracting ? (
-            <div className='flex items-center justify-center gap-2'>
-              <div className='w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin'></div>
-              Extracting Text...
-            </div>
-          ) : isUploading ? (
-            <div className='flex items-center justify-center gap-2'>
-              <div className='w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin'></div>
-              Analyzing Statement...
-            </div>
-          ) : (
-            'Analyze Statement'
-          )}
-        </button>
+        <div className="space-y-3">
+          <button
+            onClick={handleAnalyze}
+            disabled={isUploading || isExtracting}
+            className='w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:scale-100 disabled:cursor-not-allowed'
+          >
+            {isExtracting ? (
+              <div className='flex items-center justify-center gap-2'>
+                <div className='w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin'></div>
+                Extracting Text...
+              </div>
+            ) : isUploading ? (
+              <div className='flex items-center justify-center gap-2'>
+                <div className='w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin'></div>
+                Analyzing Statement...
+              </div>
+            ) : (
+              'Analyze Statement'
+            )}
+          </button>
+        </div>
       )}
 
       {/* Feature Info */}
@@ -317,6 +370,16 @@ const UploadStatement = () => {
           </div>
         </div>
       </div>
+
+      {/* Transaction Review Modal */}
+      {transactionData && (
+        <TransactionReviewDialog
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          data={transactionData}
+          onSaveTransactions={handleSaveTransactions}
+        />
+      )}
     </div>
   );
 };

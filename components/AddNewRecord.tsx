@@ -66,16 +66,16 @@ const AddRecord = () => {
   };
 
   return (
-    <div className='bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 hover:shadow-2xl'>
+    <div className='bg-card backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-lg border border-border hover:shadow-xl transition-shadow'>
       <div className='flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6'>
         <div className='w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 rounded-xl flex items-center justify-center shadow-lg'>
           <span className='text-white text-sm sm:text-lg'>💳</span>
         </div>
         <div>
-          <h3 className='text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 leading-tight'>
+          <h3 className='text-lg sm:text-xl font-bold text-card-foreground leading-tight'>
             Add New Expense
           </h3>
-          <p className='text-xs text-gray-500 dark:text-gray-400 mt-0.5'>
+          <p className='text-xs text-muted-foreground mt-0.5'>
             Track your spending with AI assistance
           </p>
         </div>
@@ -90,12 +90,12 @@ const AddRecord = () => {
         className='space-y-6 sm:space-y-8'
       >
         {/* Expense Description and Date */}
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-emerald-50/50 to-green-50/50 dark:from-emerald-900/10 dark:to-green-900/10 rounded-xl border border-emerald-100/50 dark:border-emerald-800/50'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-secondary/50 rounded-xl border border-border'>
           {/* Expense Description */}
           <div className='space-y-1.5'>
             <label
               htmlFor='text'
-              className='flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300 tracking-wide'
+              className='flex items-center gap-2 text-xs font-semibold text-foreground tracking-wide'
             >
               <span className='w-1.5 h-1.5 bg-emerald-500 rounded-full'></span>
               Expense Description
@@ -107,7 +107,7 @@ const AddRecord = () => {
                 name='text'
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className='w-full pl-3 pr-12 sm:pr-14 py-2.5 bg-white/70 dark:bg-gray-800/70 border-2 border-gray-200/80 dark:border-gray-600/80 rounded-xl focus:ring-2 focus:ring-emerald-500/30 focus:bg-white dark:focus:bg-gray-700/90 focus:border-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm hover:shadow-md transition-all duration-200'
+                className='w-full pl-3 pr-12 sm:pr-14 py-2.5 bg-background border-2 border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-ring text-foreground placeholder-muted-foreground text-sm shadow-sm hover:shadow-md transition-all duration-200'
                 placeholder='Coffee, groceries, gas...'
                 required
               />
@@ -137,7 +137,7 @@ const AddRecord = () => {
           <div className='space-y-1.5'>
             <label
               htmlFor='date'
-              className='flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300 tracking-wide'
+              className='flex items-center gap-2 text-xs font-semibold text-foreground tracking-wide'
             >
               <span className='w-1.5 h-1.5 bg-green-500 rounded-full'></span>
               Expense Date
@@ -146,7 +146,7 @@ const AddRecord = () => {
               type='date'
               name='date'
               id='date'
-              className='w-full px-3 py-2.5 bg-white/70 dark:bg-gray-800/70 border-2 border-gray-200/80 dark:border-gray-600/80 rounded-xl focus:ring-2 focus:ring-emerald-500/30 focus:bg-white dark:focus:bg-gray-700/90 focus:border-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-100 text-sm shadow-sm hover:shadow-md transition-all duration-200'
+              className='w-full px-3 py-2.5 bg-background border-2 border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-ring text-foreground text-sm shadow-sm hover:shadow-md transition-all duration-200'
               required
               onFocus={(e) => e.target.showPicker()}
             />
@@ -154,16 +154,16 @@ const AddRecord = () => {
         </div>
 
         {/* Category Selection and Amount */}
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-green-50/50 to-emerald-50/50 dark:from-green-900/10 dark:to-emerald-900/10 rounded-xl border border-green-100/50 dark:border-green-800/50'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-secondary/50 rounded-xl border border-border'>
           {/* Category Selection */}
           <div className='space-y-1.5'>
             <label
               htmlFor='category'
-              className='flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300 tracking-wide'
+              className='flex items-center gap-2 text-xs font-semibold text-foreground tracking-wide'
             >
               <span className='w-1.5 h-1.5 bg-green-500 rounded-full'></span>
               Category
-              <span className='text-xs text-gray-400 dark:text-gray-500 ml-2 font-normal hidden sm:inline'>
+              <span className='text-xs text-muted-foreground ml-2 font-normal hidden sm:inline'>
                 Use the ✨ button above for AI suggestions
               </span>
             </label>
@@ -172,52 +172,52 @@ const AddRecord = () => {
               name='category'
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className='w-full px-3 py-2.5 bg-white/70 dark:bg-gray-800/70 border-2 border-gray-200/80 dark:border-gray-600/80 rounded-xl focus:ring-2 focus:ring-emerald-500/30 focus:bg-white dark:focus:bg-gray-700/90 focus:border-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-100 cursor-pointer text-sm shadow-sm hover:shadow-md transition-all duration-200'
+              className='w-full px-3 py-2.5 bg-background border-2 border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-ring text-foreground cursor-pointer text-sm shadow-sm hover:shadow-md transition-all duration-200'
               required
             >
               <option
                 value=''
                 disabled
-                className='text-gray-400 dark:text-gray-500'
+                className='text-muted-foreground'
               >
                 Select category...
               </option>
-              <option value='Food' className='text-gray-900 dark:text-gray-100'>
+              <option value='Food' className='text-foreground'>
                 🍔 Food & Dining
               </option>
               <option
                 value='Transportation'
-                className='text-gray-900 dark:text-gray-100'
+                className='text-foreground'
               >
                 🚗 Transportation
               </option>
               <option
                 value='Shopping'
-                className='text-gray-900 dark:text-gray-100'
+                className='text-foreground'
               >
                 🛒 Shopping
               </option>
               <option
                 value='Entertainment'
-                className='text-gray-900 dark:text-gray-100'
+                className='text-foreground'
               >
                 🎬 Entertainment
               </option>
               <option
                 value='Bills'
-                className='text-gray-900 dark:text-gray-100'
+                className='text-foreground'
               >
                 💡 Bills & Utilities
               </option>
               <option
                 value='Healthcare'
-                className='text-gray-900 dark:text-gray-100'
+                className='text-foreground'
               >
                 🏥 Healthcare
               </option>
               <option
                 value='Other'
-                className='text-gray-900 dark:text-gray-100'
+                className='text-foreground'
               >
                 📦 Other
               </option>
@@ -228,16 +228,16 @@ const AddRecord = () => {
           <div className='space-y-1.5'>
             <label
               htmlFor='amount'
-              className='flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300 tracking-wide'
+              className='flex items-center gap-2 text-xs font-semibold text-foreground tracking-wide'
             >
               <span className='w-1.5 h-1.5 bg-green-500 rounded-full'></span>
               Amount
-              <span className='text-xs text-gray-400 dark:text-gray-500 ml-2 font-normal hidden sm:inline'>
+              <span className='text-xs text-muted-foreground ml-2 font-normal hidden sm:inline'>
                 Enter amount between $0 and $1,000
               </span>
             </label>
             <div className='relative'>
-              <span className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-medium text-sm'>
+              <span className='absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium text-sm'>
                 $
               </span>
               <input
@@ -249,7 +249,7 @@ const AddRecord = () => {
                 step='0.01'
                 value={amount}
                 onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-                className='w-full pl-6 pr-3 py-2.5 bg-white/70 dark:bg-gray-800/70 border-2 border-gray-200/80 dark:border-gray-600/80 rounded-xl focus:ring-2 focus:ring-emerald-500/30 focus:bg-white dark:focus:bg-gray-700/90 focus:border-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-sm font-semibold shadow-sm hover:shadow-md transition-all duration-200'
+                className='w-full pl-6 pr-3 py-2.5 bg-background border-2 border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-ring text-foreground placeholder-muted-foreground text-sm font-semibold shadow-sm hover:shadow-md transition-all duration-200'
                 placeholder='0.00'
                 required
               />

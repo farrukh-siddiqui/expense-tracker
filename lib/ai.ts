@@ -25,6 +25,28 @@ export interface ExpenseRecord {
   date: string;
 }
 
+export interface ParsedTransaction {
+  id: string;
+  date: string;
+  originalDescription: string;
+  editableName: string;
+  amount: number;
+  type: 'debit' | 'credit';
+}
+
+export interface TransactionReviewData {
+  transactions: ParsedTransaction[];
+  accountInfo: {
+    accountName: string;
+    accountNumber: string;
+    statementPeriod: string;
+    openingBalance: number;
+    closingBalance: number;
+    totalIn: number;
+    totalOut: number;
+  };
+}
+
 export interface AIInsight {
   id: string;
   type: 'warning' | 'info' | 'success' | 'tip';
@@ -32,6 +54,125 @@ export interface AIInsight {
   message: string;
   action?: string;
   confidence: number;
+}
+
+export async function parseBankStatementWithAI(extractedText: string): Promise<TransactionReviewData> {
+  try {
+    console.log('🤖 Parsing bank statement with AI...');
+    
+    const prompt = `Parse this bank statement text and extract transaction data. Return a JSON object with the following structure:
+
+{
+  "accountInfo": {
+    "accountName": "string (account holder name)",
+    "accountNumber": "string (account number)",
+    "statementPeriod": "string (statement period)",
+    "openingBalance": number,
+    "closingBalance": number,
+    "totalIn": number,
+    "totalOut": number
+  },
+  "transactions": [
+    {
+      "date": "string (normalize to DD MMM YYYY or DD/MM/YYYY format)",
+      "description": "string (clean description)",
+      "amount": number (positive number),
+      "type": "debit" | "credit"
+    }
+  ]
+}
+
+Bank Statement Text:
+${extractedText}
+
+Important parsing rules:
+1. Extract ALL transactions, even if format varies
+2. Normalize dates to readable format
+3. Clean up descriptions (remove extra spaces, codes)
+4. Determine if transaction is debit (money out) or credit (money in)
+5. Convert all amounts to positive numbers
+6. If account info is unclear, use "Unknown" for missing fields
+7. Look for patterns like: date, description, amount, balance
+8. Common credit indicators: salary, deposit, transfer in, refund, interest
+9. Common debit indicators: payment, withdrawal, fee, bill, purchase
+
+Return ONLY the JSON object, no additional text or formatting.`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'deepseek/deepseek-chat-v3-0324:free',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert bank statement parser. Extract transaction data accurately and return only valid JSON. Be thorough in finding all transactions regardless of format variations.',
+        },
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: 0.1, // Low temperature for consistent parsing
+      max_tokens: 2000,
+    });
+
+    const response = completion.choices[0].message.content;
+    if (!response) {
+      throw new Error('No response from AI');
+    }
+
+    // Clean the response by removing markdown code blocks if present
+    let cleanedResponse = response.trim();
+    if (cleanedResponse.startsWith('```json')) {
+      cleanedResponse = cleanedResponse
+        .replace(/^```json\s*/, '')
+        .replace(/\s*```$/, '');
+    } else if (cleanedResponse.startsWith('```')) {
+      cleanedResponse = cleanedResponse
+        .replace(/^```\s*/, '')
+        .replace(/\s*```$/, '');
+    }
+
+    // Parse AI response
+    const parsedData = JSON.parse(cleanedResponse);
+    
+    // Convert to required format with IDs
+    const transactions: ParsedTransaction[] = parsedData.transactions.map((tx: {
+      date: string;
+      description: string;
+      amount: number;
+      type: 'debit' | 'credit';
+    }, index: number) => ({
+      id: `transaction-${index + 1}`,
+      date: tx.date,
+      originalDescription: tx.description,
+      editableName: tx.description,
+      amount: tx.amount,
+      type: tx.type
+    }));
+
+    console.log(`✅ AI successfully parsed ${transactions.length} transactions`);
+
+    return {
+      transactions,
+      accountInfo: parsedData.accountInfo
+    };
+
+  } catch (error) {
+    console.error('❌ Error parsing bank statement with AI:', error);
+    
+    // Return fallback empty data if AI parsing fails
+    return {
+      transactions: [],
+      accountInfo: {
+        accountName: 'Unknown',
+        accountNumber: 'Unknown', 
+        statementPeriod: 'Unknown',
+        openingBalance: 0,
+        closingBalance: 0,
+        totalIn: 0,
+        totalOut: 0
+      }
+    };
+  }
 }
 
 export async function generateExpenseInsights(

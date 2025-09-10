@@ -20,16 +20,16 @@ const ExpenseStats = async () => {
     const averageExpense = validRecord / validDays;
 
     return (
-      <div className='bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 hover:shadow-2xl'>
+      <div className='bg-card backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-xl border border-border hover:shadow-2xl'>
         <div className='flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6'>
           <div className='w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 rounded-xl flex items-center justify-center shadow-lg'>
             <span className='text-white text-sm sm:text-lg'>📊</span>
           </div>
           <div>
-            <h3 className='text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100'>
+            <h3 className='text-lg sm:text-xl font-bold text-card-foreground'>
               Expense Statistics
             </h3>
-            <p className='text-xs text-gray-500 dark:text-gray-400 mt-0.5'>
+            <p className='text-xs text-muted-foreground mt-0.5'>
               Your spending insights and ranges
             </p>
           </div>
@@ -37,12 +37,12 @@ const ExpenseStats = async () => {
 
         <div className='space-y-3 sm:space-y-4'>
           {/* Average Daily Spending */}
-          <div className='bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-3 sm:p-4 border border-gray-200/50 dark:border-gray-600/50'>
+          <div className='bg-secondary/50 rounded-xl p-3 sm:p-4 border border-border'>
             <div className='text-center'>
-              <p className='text-xs font-medium text-gray-600 dark:text-gray-300 mb-2 tracking-wide uppercase'>
+              <p className='text-xs font-medium text-muted-foreground mb-2 tracking-wide uppercase'>
                 Average Daily Spending
               </p>
-              <div className='text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2'>
+              <div className='text-2xl sm:text-3xl font-bold text-foreground mb-2'>
                 ${averageExpense.toFixed(2)}
               </div>
               <div className='inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded-full text-xs font-medium'>
@@ -63,7 +63,7 @@ const ExpenseStats = async () => {
                   </span>
                 </div>
                 <div className='flex-1'>
-                  <h4 className='font-bold text-gray-900 dark:text-gray-100 text-xs mb-0.5'>
+                  <h4 className='font-bold text-foreground text-xs mb-0.5'>
                     Highest
                   </h4>
                   <p className='text-lg font-bold text-red-600 dark:text-red-300'>
@@ -82,7 +82,7 @@ const ExpenseStats = async () => {
                   </span>
                 </div>
                 <div className='flex-1'>
-                  <h4 className='font-bold text-gray-900 dark:text-gray-100 text-xs mb-0.5'>
+                  <h4 className='font-bold text-foreground text-xs mb-0.5'>
                     Lowest
                   </h4>
                   <p className='text-lg font-bold text-green-600 dark:text-green-300'>
